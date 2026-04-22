@@ -7,6 +7,7 @@ const Application = require('../models/Application');
 const ManagerTestLink = require('../models/ManagerTestLink');
 const ManagerWorkflow = require('../models/ManagerWorkflow');
 const ActivityLog = require('../models/ActivityLog');
+const emailService = require('../utils/emailService');
 const { getPredefinedFormFields } = require('../utils/applicationFlowUtils');
 
 const ALLOWED_APPLY_MODES = ['direct_profile', 'predefined_form', 'google_form', 'custom_form'];
@@ -685,6 +686,14 @@ const callCandidateForInterviewFromTest = async (req, res) => {
       message: `Interview call sent for ${interview.candidate_email}`
     });
 
+    // Send Email Invitation
+    await emailService.sendInterviewInvitation({
+      candidateEmail: interview.candidate_email,
+      interviewType: interview.interview_type,
+      scheduledAt: interview.scheduled_at,
+      message: req.body.notes || 'Interview call sent after test qualification'
+    });
+
     await ManagerTestLink.update(
       testLinkId,
       {
@@ -757,6 +766,14 @@ const createInterview = async (req, res) => {
       previousStatus: null,
       newStatus: 'scheduled',
       message: `Interview scheduled for ${interview.candidate_email}`
+    });
+
+    // Send Email Invitation
+    await emailService.sendInterviewInvitation({
+      candidateEmail: interview.candidate_email,
+      interviewType: interview.interview_type,
+      scheduledAt: interview.scheduled_at,
+      message: req.body.notes || ''
     });
 
     await ActivityLog.record('Manager Scheduled Interview', 'interview', interview.id);

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import styles from './LoginPage.module.css';
@@ -8,18 +8,48 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [agreedToLegal, setAgreedToLegal] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkStatus = () => {
+      const hasTerms = localStorage.getItem('agreedToTerms') === 'true';
+      const hasPrivacy = localStorage.getItem('agreedToPrivacy') === 'true';
+      if (hasTerms && hasPrivacy) {
+        setAgreedToLegal(true);
+      }
+    };
+
+    checkStatus();
+    window.addEventListener('storage', checkStatus);
+    return () => window.removeEventListener('storage', checkStatus);
+  }, []);
+
   const { login } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+
+    const hasTerms = localStorage.getItem('agreedToTerms') === 'true';
+    const hasPrivacy = localStorage.getItem('agreedToPrivacy') === 'true';
+
+    if (!hasTerms || !hasPrivacy) {
+      setError('You forgot to click and accept the Terms & Conditions and Privacy Policy links first.');
+      return;
+    }
+
+    if (!agreedToLegal) {
+      setError('You must have to accept the terms and conditions checkbox.');
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const result = await login(email, password);
-      // Redirect to OTP verification page
-      navigate('/verify-otp', { state: { userId: result.userId, email: result.email } });
+      await login(email, password);
+      // Redirect to dashboard automatically
+      navigate('/dashboard', { replace: true });
     } catch (err) {
       setError(err.response?.data?.error || err.response?.data?.message || 'Login failed');
     } finally {
@@ -62,6 +92,37 @@ const LoginPage = () => {
               onChange={(e) => setPassword(e.target.value)}
               required
             />
+          </div>
+
+          <div style={{ textAlign: 'right', marginBottom: '1rem' }}>
+            <button
+              type="button"
+              className={styles.linkBtn}
+              onClick={() => navigate('/forgot-password')}
+              style={{ fontSize: '0.85rem', textDecoration: 'none' }}
+            >
+              Forgot Password?
+            </button>
+          </div>
+
+          <div className={styles.checkboxGroup}>
+            <input 
+              type="checkbox" 
+              id="agreeLegal" 
+              checked={agreedToLegal} 
+              onChange={(e) => setAgreedToLegal(e.target.checked)} 
+              onClick={(e) => {
+                const hasTerms = localStorage.getItem('agreedToTerms') === 'true';
+                const hasPrivacy = localStorage.getItem('agreedToPrivacy') === 'true';
+                if (e.target.checked && (!hasTerms || !hasPrivacy)) {
+                  e.preventDefault();
+                  setError('Please open both the Terms & Conditions and Privacy Policy links and check the agreement boxes inside them first.');
+                }
+              }}
+            />
+            <label htmlFor="agreeLegal">
+              I agree to the <a href="/terms" target="_blank" rel="noopener noreferrer">Terms and Conditions</a> and <a href="/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
+            </label>
           </div>
 
           <button

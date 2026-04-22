@@ -38,8 +38,8 @@
 .statCard {
   border-radius: 12px;
   padding: 16px;
-  background: linear-gradient(145deg, #ffffff 0%, #edf4ff 100%);
-  border: 1px solid #d8e8fb;
+  background: var(--bg-card);
+  border: 1px solid var(--border-main);
 }
 
 .statTitle {
@@ -53,7 +53,7 @@
 .statValue {
   margin: 0;
   font-size: 32px;
-  color: #16497d;
+  color: var(--primary-color);
   font-weight: 800;
 }
 
@@ -64,9 +64,9 @@
 }
 
 .card {
-  background: #fff;
+  background: var(--bg-card);
   border-radius: 12px;
-  border: 1px solid #dfe9f5;
+  border: 1px solid var(--border-main);
   padding: 16px;
 }
 
@@ -135,9 +135,9 @@
 
 .notification {
   border-radius: 10px;
-  border: 1px solid #e7eef8;
+  border: 1px solid var(--border-main);
   padding: 10px 12px;
-  background: #fbfdff;
+  background: var(--bg-card);
 }
 
 .noteTitle {

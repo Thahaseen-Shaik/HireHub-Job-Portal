@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const emailService = require('./emailService');
 
 // Hash password
 const hashPassword = async (password) => {
@@ -36,10 +37,16 @@ const sendOTP = (email, otp) => {
   // In production: use nodemailer or any email service
 };
 
+// Send Reset Email
+const sendResetEmail = async (email, resetToken) => {
+  return await emailService.sendResetEmail(email, resetToken);
+};
+
 module.exports = {
   hashPassword,
   comparePassword,
   generateToken,
   generateOTP,
   sendOTP,
+  sendResetEmail,
 };

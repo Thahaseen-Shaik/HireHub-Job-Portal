@@ -12,14 +12,14 @@
   margin-bottom: 8px;
 }
 
-.feedbackSuccess { background: #dcfce7; color: #166534; }
-.feedbackError { background: #fee2e2; color: #991b1b; }
+.feedbackSuccess { background: rgba(34, 197, 94, 0.15); color: #4ade80; }
+.feedbackError { background: rgba(239, 68, 68, 0.15); color: #f87171; }
 
 .heroCard, .card {
-  background: white;
+  background: var(--bg-card);
   border-radius: 16px;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+  border: 1px solid var(--border-main);
+  box-shadow: var(--shadow);
 }
 
 .heroCard {
@@ -34,7 +34,8 @@
   height: 160px;
   border-radius: 20px;
   overflow: hidden;
-  background: #f1f5f9;
+  background: var(--bg-main);
+  border: 1px solid var(--border-main);
 }
 
 .avatarImage {
@@ -56,19 +57,19 @@
 .heroContent h2 {
   margin: 0;
   font-size: 28px;
-  color: #1e293b;
+  color: var(--text-main);
 }
 
 .kicker {
   text-transform: uppercase;
   font-size: 12px;
   font-weight: 700;
-  color: #3b82f6;
+  color: var(--primary-color);
   margin-bottom: 4px;
 }
 
 .subtleText {
-  color: #64748b;
+  color: var(--text-dim);
   font-size: 14px;
   margin-top: 4px;
 }
@@ -80,21 +81,21 @@
 }
 
 .metaChip {
-  background: #f8fafc;
+  background: var(--bg-main);
   padding: 10px 16px;
   border-radius: 12px;
-  border: 1px solid #f1f5f9;
+  border: 1px solid var(--border-main);
 }
 
 .metaChip span {
   display: block;
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--text-dim);
 }
 
 .metaChip strong {
   font-size: 14px;
-  color: #1e293b;
+  color: var(--text-main);
 }
 
 .actionRow {
@@ -111,8 +112,8 @@
   font-size: 14px;
 }
 
-.primaryBtn { background: #2563eb; color: white; border: none; }
-.secondaryBtn { background: white; color: #1e293b; border: 1px solid #d1d5db; }
+.primaryBtn { background: var(--primary-color); color: white; border: none; }
+.secondaryBtn { background: var(--bg-main); color: var(--text-main); border: 1px solid var(--border-main); }
 
 .sectionGrid {
   display: grid;
@@ -122,7 +123,7 @@
 
 .card { padding: 24px; }
 .cardHeader { margin-bottom: 16px; }
-.cardHeader h3 { margin: 0; font-size: 18px; color: #1e293b; }
+.cardHeader h3 { margin: 0; font-size: 18px; color: var(--text-main); }
 
 .formGrid, .securityGrid {
   display: grid;
@@ -133,26 +134,29 @@
 .fullWidth { grid-column: 1 / -1; }
 
 .fieldGroup { display: flex; flex-direction: column; gap: 6px; }
-.fieldLabel { font-size: 13px; font-weight: 600; color: #475569; }
+.fieldLabel { font-size: 13px; font-weight: 600; color: var(--text-dim); }
 
 .fieldGroup input, .fieldGroup textarea {
   padding: 10px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-main);
   border-radius: 8px;
   font-size: 14px;
+  background: var(--bg-main);
+  color: var(--text-main);
 }
 
 .fieldGroup input:disabled, .fieldGroup textarea:disabled {
-  background: #f9fafb;
+  background: var(--bg-main);
+  opacity: 0.6;
 }
 
 .tagRow { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
-.skillTag { background: #eff6ff; color: #1e40af; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; }
+.skillTag { background: var(--primary-color); color: white; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; }
 
 .infoList { display: flex; flex-direction: column; gap: 12px; }
 .infoRow { display: flex; justify-content: space-between; font-size: 14px; }
-.infoRow span { color: #64748b; }
-.infoRow strong { color: #1e293b; }
+.infoRow span { color: var(--text-dim); }
+.infoRow strong { color: var(--text-main); }
 
 @media (max-width: 1024px) {
   .heroCard { flex-direction: column; align-items: flex-start; }

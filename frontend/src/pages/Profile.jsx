@@ -108,6 +108,26 @@ const Profile = () => {
       .filter(Boolean)
   ), [draft.skills, isEditing, profile.skills]);
 
+  React.useEffect(() => {
+    const handleUIAction = (e) => {
+      const { action, payload } = e.detail;
+      if (action === 'UPDATE_PROFILE' && payload) {
+        setProfile(prev => {
+          const up = { ...prev };
+          if (payload.fullName) up.fullName = payload.fullName;
+          if (payload.phone) up.phone = payload.phone;
+          if (payload.bio) up.designation = payload.bio; // mapping bio to designation for admin for now
+          
+          persistProfile(up);
+          setFeedback({ type: 'success', message: 'Profile updated via AI assistant.' });
+          return up;
+        });
+      }
+    };
+    window.addEventListener('hirehub-ui-action', handleUIAction);
+    return () => window.removeEventListener('hirehub-ui-action', handleUIAction);
+  }, []);
+
   const profileImage = previewImage || profile.image;
 
   const startEditing = () => {

@@ -2,6 +2,7 @@ import { useId, useState } from 'react';
 import ContactForm from './ContactForm';
 import styles from './OpeningPage.module.css';
 import { useSettings } from '../../context/SettingsContext';
+import { useTheme } from '../../context/ThemeContext';
 
 const navLinks = [
   { label: 'Home', href: '#home' },
@@ -86,7 +87,7 @@ const LogoMark = () => {
       <path
         d="M17 18.5v-2.2A2.3 2.3 0 0 1 19.3 14h9.4a2.3 2.3 0 0 1 2.3 2.3v2.2"
         fill="none"
-        stroke="#14B8A6"
+        stroke="var(--primary-color)"
         strokeWidth="2"
         strokeLinecap="round"
       />
@@ -136,16 +137,17 @@ const FeatureIcon = ({ kind }) => {
     <svg viewBox="0 0 48 48" className={styles.sectionIcon} aria-hidden="true">
       <path
         d="M12 34V20m8 14V14m8 20V18m8 16V24"
-        stroke="#14B8A6"
+        stroke="var(--primary-color)"
         strokeWidth="3"
         strokeLinecap="round"
       />
-      <path d="M10 12h8m6 0h14" stroke="#0F172A" strokeWidth="3" strokeLinecap="round" />
+      <path d="M10 12h8m6 0h14" stroke="var(--text-main)" strokeWidth="3" strokeLinecap="round" />
     </svg>
   );
 };
 
 const OpeningPage = ({ onLogin, onRegister }) => {
+  const { theme, setTheme, themes: themeNames } = useTheme();
   const { settings } = useSettings();
   const [menuOpen, setMenuOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
@@ -440,6 +442,46 @@ const OpeningPage = ({ onLogin, onRegister }) => {
             </div>
           </section>
         )}
+        <section className={styles.themeSection}>
+          <div className={styles.themeHeader}>
+            <span className={styles.themeBadge}>Personalization</span>
+            <h2>Choose Your Theme</h2>
+            <p className={styles.themeSubtitle}>
+              Pick a visual style that matches your taste. Applied instantly across the entire platform.
+            </p>
+          </div>
+
+          <div className={styles.themeGridCustom}>
+            {[
+              { id: themeNames.DEFAULT, name: 'Default', previewClass: styles.previewDefault },
+              { id: themeNames.ARCTIC, name: 'Arctic Command', previewClass: styles.previewArctic },
+              { id: themeNames.EMBER, name: 'Ember Ledger', previewClass: styles.previewEmber },
+              { id: themeNames.FOREST, name: 'Forest Growth', previewClass: styles.previewForest }
+            ].map((t) => (
+              <div
+                key={t.id}
+                className={`${styles.themeCard} ${theme === t.id ? styles.themeActive : ''}`}
+                onClick={() => setTheme(t.id)}
+              >
+                <div className={`${styles.themePreviewLarge} ${t.previewClass}`}>
+                  <div className={styles.previewBar}></div>
+                  <div className={styles.previewBlock}></div>
+                  {theme === t.id && (
+                    <div className={styles.activeIndicator}>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                    </div>
+                  )}
+                </div>
+                <div className={styles.themeCardFooter}>
+                  <h3>{t.name}</h3>
+                </div>
+              </div>
+            ))}
+          </div>
+
+        </section>
       </main>
 
       <footer className={styles.footer}>
@@ -456,6 +498,8 @@ const OpeningPage = ({ onLogin, onRegister }) => {
           <a href="#why-us">Why {settings?.platform_name || 'Shnoor HireHub'}</a>
           <a href="#employers">Employers</a>
           <a href="#contact" onClick={handleFooterContactClick}>Contact</a>
+          <a href="/terms" target="_blank" rel="noopener noreferrer">Terms</a>
+          <a href="/privacy" target="_blank" rel="noopener noreferrer">Privacy</a>
         </div>
       </footer>
     </div>

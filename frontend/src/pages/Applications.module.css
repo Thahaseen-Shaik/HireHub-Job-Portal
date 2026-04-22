@@ -6,8 +6,8 @@
 }
 
 .spinner {
-  border: 4px solid #f0f2f5;
-  border-top: 4px solid #0066cc;
+  border: 4px solid var(--bg-main);
+  border-top: 4px solid var(--primary-color);
   border-radius: 50%;
   width: 40px;
   height: 40px;
@@ -20,27 +20,28 @@
 }
 
 .alert {
-  background-color: #f8d7da;
-  color: #721c24;
-  border: 1px solid #f5c6cb;
+  background: rgba(239, 68, 68, 0.1);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.2);
   padding: 12px 16px;
   border-radius: 4px;
   margin-bottom: 20px;
 }
 
 .tableContainer {
-  background: white;
+  background: var(--bg-card);
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow);
   overflow: hidden;
+  border: 1px solid var(--border-main);
 }
 
 .tableContainer h3 {
   margin: 0;
   padding: 20px;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--border-main);
   font-size: 18px;
-  color: #333;
+  color: var(--text-main);
 }
 
 .table {
@@ -49,15 +50,15 @@
 }
 
 .table thead {
-  background-color: #f5f7fa;
+  background-color: var(--bg-main);
 }
 
 .table th {
   padding: 12px 20px;
   text-align: left;
   font-weight: 600;
-  color: #333;
-  border-bottom: 2px solid #e0e0e0;
+  color: var(--text-dim);
+  border-bottom: 2px solid var(--border-main);
   font-size: 13px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -65,18 +66,18 @@
 
 .table td {
   padding: 15px 20px;
-  border-bottom: 1px solid #e0e0e0;
-  color: #333;
+  border-bottom: 1px solid var(--border-main);
+  color: var(--text-main);
   font-size: 14px;
 }
 
 .table tbody tr:hover {
-  background-color: #fafafa;
+  background-color: var(--bg-main);
 }
 
 .empty {
   text-align: center;
-  color: #999;
+  color: var(--text-dim);
   padding: 40px 20px !important;
 }
 
@@ -89,18 +90,18 @@
 }
 
 .badgeApplied {
-  background-color: #d1ecf1;
-  color: #0c5460;
+  background-color: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
 }
 
 .badgeSelected {
-  background-color: #d4edda;
-  color: #155724;
+  background-color: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
 }
 
 .badgeRejected {
-  background-color: #f8d7da;
-  color: #721c24;
+  background-color: rgba(239, 68, 68, 0.15);
+  color: #f87171;
 }
 
 .actions {
@@ -123,19 +124,19 @@
 }
 
 .btnSuccess {
-  background-color: #28a745;
+  background-color: #22c55e;
 }
 
 .btnSuccess:hover:not(:disabled) {
-  background-color: #218838;
+  opacity: 0.8;
 }
 
 .btnDanger {
-  background-color: #dc3545;
+  background-color: #ef4444;
 }
 
 .btnDanger:hover:not(:disabled) {
-  background-color: #c82333;
+  opacity: 0.8;
 }
 
 button:disabled {

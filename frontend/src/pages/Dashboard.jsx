@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { dashboardAPI } from '../api';
 import AdminLayout from '../components/admin/AdminLayout';
+import ActivityFeed from '../components/common/ActivityFeed';
 import styles from './Dashboard.module.css';
 
 const Dashboard = () => {
@@ -40,7 +41,7 @@ const Dashboard = () => {
 
       <div className={styles.statsGrid}>
         <div className={styles.statCard}>
-          <div className={styles.statIcon}>🏢</div>
+          <div className={styles.statIcon}></div>
           <div className={styles.statContent}>
             <p className={styles.statLabel}>Total Companies</p>
             <p className={styles.statValue}>{stats?.totalCompanies || 0}</p>
@@ -48,7 +49,7 @@ const Dashboard = () => {
         </div>
 
         <div className={styles.statCard}>
-          <div className={styles.statIcon}>👨‍💻</div>
+          <div className={styles.statIcon}></div>
           <div className={styles.statContent}>
             <p className={styles.statLabel}>Total Users</p>
             <p className={styles.statValue}>{stats?.totalUsers || 0}</p>
@@ -56,13 +57,15 @@ const Dashboard = () => {
         </div>
 
         <div className={styles.statCard}>
-          <div className={styles.statIcon}>💰</div>
+          <div className={styles.statIcon}></div>
           <div className={styles.statContent}>
             <p className={styles.statLabel}>Total Revenue</p>
             <p className={styles.statValue}>${stats?.totalRevenue?.toFixed(2) || '0.00'}</p>
           </div>
         </div>
       </div>
+
+
     </AdminLayout>
   );
 };

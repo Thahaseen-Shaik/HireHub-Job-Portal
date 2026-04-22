@@ -34,7 +34,7 @@
 
 .backBtn {
   margin-bottom: 20px;
-  background: #0066cc;
+  background: var(--primary-color);
   color: white;
 }
 
@@ -47,10 +47,11 @@
 
 .summaryCard,
 .detailCard {
-  background: white;
+  background: var(--bg-card);
   border-radius: 8px;
   padding: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-main);
 }
 
 .summaryCard h4,
@@ -62,7 +63,7 @@
   margin: 0;
   font-size: 24px;
   font-weight: 700;
-  color: #0066cc;
+  color: var(--primary-color);
 }
 
 .detailsGrid {
@@ -78,7 +79,7 @@
 
 .detailList span {
   font-weight: 600;
-  color: #444;
+  color: var(--text-dim);
 }
 
 .jobsTableWrap {
@@ -93,13 +94,14 @@
 .table th,
 .table td {
   padding: 12px 14px;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--border-main);
   text-align: left;
+  color: var(--text-main);
 }
 
 .empty {
   text-align: center;
-  color: #777;
+  color: var(--text-dim);
   padding: 24px !important;
 }
 

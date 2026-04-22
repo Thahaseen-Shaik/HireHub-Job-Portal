@@ -23,7 +23,7 @@ export const SettingsProvider = ({ children }) => {
         setSettings({ ...defaultSettings, ...next });
       }
     } catch (error) {
-      // Keep safe defaults when API is unavailable.
+      // Defaults.
       setSettings(defaultSettings);
     } finally {
       setLoading(false);

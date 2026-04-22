@@ -20,7 +20,8 @@ class Job {
       ADD COLUMN IF NOT EXISTS google_form_url TEXT,
       ADD COLUMN IF NOT EXISTS manager_instructions TEXT,
       ADD COLUMN IF NOT EXISTS created_by INT REFERENCES users(id) ON DELETE SET NULL,
-      ADD COLUMN IF NOT EXISTS updated_by INT REFERENCES users(id) ON DELETE SET NULL;
+      ADD COLUMN IF NOT EXISTS updated_by INT REFERENCES users(id) ON DELETE SET NULL,
+      ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
     `;
 
     await pool.query(query);

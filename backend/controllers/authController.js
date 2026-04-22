@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const OTPVerification = require('../models/OTPVerification');
-const { hashPassword, comparePassword, generateToken, generateOTP, sendOTP } = require('../utils/authUtils');
+const { hashPassword, comparePassword, generateToken, generateOTP, sendOTP, sendResetEmail } = require('../utils/authUtils');
+const crypto = require('crypto');
 
 const ALLOWED_ROLES = ['admin', 'superadmin', 'manager', 'company_manager', 'user'];
 
@@ -56,16 +57,12 @@ const login = async (req, res) => {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    const otp = generateOTP();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
-
-    await OTPVerification.create(user.id, otp, expiresAt);
-    sendOTP(user.email, otp);
+    const token = generateToken(user);
 
     return res.status(200).json({
-      message: 'OTP sent to email. Please verify.',
-      userId: user.id,
-      email: user.email
+      message: 'Logged in successfully',
+      token,
+      user: { id: user.id, name: user.name, email: user.email, role: user.role }
     });
   } catch (error) {
     return res.status(500).json({ message: 'Error logging in', error: error.message });
@@ -120,9 +117,59 @@ const getCurrentUser = async (req, res) => {
   }
 };
 
+// Forgot Password
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ message: 'Email is required' });
+    }
+
+    const user = await User.findByEmail(email);
+    if (!user) {
+      // For security reasons, don't confirm if user exists
+      return res.status(200).json({ message: 'If an account exists with that email, a reset link has been sent.' });
+    }
+
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetExpires = new Date(Date.now() + 3600000); // 1 hour
+
+    await User.updateResetToken(email, resetToken, resetExpires);
+    await sendResetEmail(user.email, resetToken);
+
+    return res.status(200).json({ message: 'If an account exists with that email, a reset link has been sent.' });
+  } catch (error) {
+    return res.status(500).json({ message: 'Error in forgot password', error: error.message });
+  }
+};
+
+// Reset Password
+const resetPassword = async (req, res) => {
+  try {
+    const { token, password } = req.body;
+    if (!token || !password) {
+      return res.status(400).json({ message: 'Token and new password are required' });
+    }
+
+    const user = await User.findByResetToken(token);
+    if (!user) {
+      return res.status(400).json({ message: 'Invalid or expired password reset token' });
+    }
+
+    const hashedPassword = await hashPassword(password);
+    await User.updatePassword(user.id, hashedPassword);
+
+    return res.status(200).json({ message: 'Password has been reset successfully. You can now login with your new password.' });
+  } catch (error) {
+    return res.status(500).json({ message: 'Error in reset password', error: error.message });
+  }
+};
+
 module.exports = {
   register,
   login,
   verifyOTP,
-  getCurrentUser
+  getCurrentUser,
+  forgotPassword,
+  resetPassword
 };

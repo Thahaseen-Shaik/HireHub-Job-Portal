@@ -113,6 +113,100 @@ const UserProfile = () => {
   }, []);
 
   useEffect(() => {
+    const handleUIAction = async (e) => {
+      const { action, payload } = e.detail;
+      if (action === 'UPDATE_PROFILE' && payload) {
+        setProfile(prev => {
+          const up = { ...prev };
+          let targetSection = null;
+
+          // Header fields
+          if (payload.displayName) { up.displayName = payload.displayName; targetSection = 'profile-header'; }
+          if (payload.headline) { up.headline = payload.headline; targetSection = 'profile-header'; }
+
+          // Basic Details
+          if (payload.fullName) { up.basicDetails.fullName = payload.fullName; targetSection = 'basic'; }
+          if (payload.phone) { up.basicDetails.phone = payload.phone; targetSection = 'basic'; }
+          if (payload.bio) { up.basicDetails.professionalSummary = payload.bio; targetSection = 'basic'; }
+          if (payload.currentLocation) { up.basicDetails.currentLocation = payload.currentLocation; targetSection = 'basic'; }
+          if (payload.preferredLocation) { up.basicDetails.preferredLocation = payload.preferredLocation; targetSection = 'basic'; }
+          if (payload.gender) { up.basicDetails.gender = payload.gender; targetSection = 'basic'; }
+          if (payload.dob) { up.basicDetails.dateOfBirth = payload.dob; targetSection = 'basic'; }
+
+          // Skills & Languages
+          if (payload.skills) {
+            targetSection = 'skills';
+            if (payload.skills_append) {
+              up.skills = Array.from(new Set([...(up.skills || []), ...payload.skills]));
+            } else {
+              up.skills = payload.skills;
+            }
+          }
+          if (payload.languages) {
+            targetSection = 'skills';
+            if (payload.languages_append) {
+              up.languages = Array.from(new Set([...(up.languages || []), ...payload.languages]));
+            } else {
+              up.languages = payload.languages;
+            }
+          }
+
+          // Phase 2: Complex Entities
+          if (payload.education) {
+            up.educationDetails = [payload.education, ...(up.educationDetails || [])];
+            targetSection = 'education';
+          }
+          if (payload.experience) {
+            up.workExperience = [payload.experience, ...(up.workExperience || [])];
+            targetSection = 'internships-work';
+          }
+          if (payload.internship) {
+            up.internships = [payload.internship, ...(up.internships || [])];
+            targetSection = 'internships-work';
+          }
+          if (payload.project) {
+            up.projects = [payload.project, ...(up.projects || [])];
+            targetSection = 'projects';
+          }
+          if (payload.extraCurricular) {
+            up.extraCurricularActivities = Array.from(new Set([...(up.extraCurricularActivities || []), ...payload.extraCurricular]));
+            targetSection = 'extracurricular';
+          }
+          if (payload.certification) {
+            const certs = up.accomplishments.certifications || [];
+            up.accomplishments.certifications = Array.from(new Set([...certs, payload.certification]));
+            targetSection = 'accomplishments';
+          }
+          if (payload.resumeUrl) {
+            up.resumeUrl = payload.resumeUrl;
+            targetSection = 'resume';
+          }
+
+          // Trigger auto-navigation if a section was identified
+          if (targetSection) setSearchParams({ section: targetSection }, { replace: true });
+          
+          // Auto-save logic
+          const submitUpdate = async () => {
+            setSaving(true);
+            try {
+               await userPortalAPI.updateProfile(up);
+               setSuccess('Profile updated via AI assistant.');
+            } catch (err) {
+               setError('AI update failed to save.');
+            } finally {
+               setSaving(false);
+            }
+          };
+          submitUpdate();
+          return up;
+        });
+      }
+    };
+    window.addEventListener('hirehub-ui-action', handleUIAction);
+    return () => window.removeEventListener('hirehub-ui-action', handleUIAction);
+  }, [setSearchParams]);
+
+  useEffect(() => {
     if (!validSections.includes(activeSection)) {
       setSearchParams({ section: 'profile-header' }, { replace: true });
     }

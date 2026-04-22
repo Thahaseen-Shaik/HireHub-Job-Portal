@@ -3,18 +3,19 @@
 }
 
 .settingsCard {
-  background: white;
+  background: var(--bg-card);
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow);
   padding: 30px;
   margin-bottom: 30px;
+  border: 1px solid var(--border-main);
 }
 
 .settingsCard h3 {
   margin: 0 0 20px 0;
   font-size: 18px;
-  color: #333;
-  border-bottom: 2px solid #0066cc;
+  color: var(--text-main);
+  border-bottom: 2px solid var(--primary-color);
   padding-bottom: 10px;
 }
 
@@ -22,23 +23,23 @@
   margin: 0 0 16px 0;
   padding: 10px 12px;
   border-radius: 8px;
-  background: #e6f4ea;
-  color: #166534;
-  border: 1px solid #b7e4c7;
+  background: rgba(34, 197, 94, 0.1);
+  color: #4ade80;
+  border: 1px solid rgba(34, 197, 94, 0.2);
   font-size: 13px;
   font-weight: 600;
 }
 
 .saveMessageError {
-  background: #fef2f2;
-  color: #991b1b;
-  border-color: #fecaca;
+  background: rgba(239, 68, 68, 0.1);
+  color: #f87171;
+  border-color: rgba(239, 68, 68, 0.2);
 }
 
 .saveMessageInfo {
-  background: #eff6ff;
-  color: #1e40af;
-  border-color: #bfdbfe;
+  background: rgba(59, 130, 246, 0.1);
+  color: #60a5fa;
+  border-color: rgba(59, 130, 246, 0.2);
 }
 
 .formGroup {
@@ -49,7 +50,7 @@
   display: block;
   margin-bottom: 8px;
   font-weight: 600;
-  color: #333;
+  color: var(--text-dim);
   font-size: 14px;
 }
 
@@ -57,18 +58,20 @@
 .formGroup textarea {
   width: 100%;
   padding: 10px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-main);
   border-radius: 4px;
   font-size: 14px;
   font-family: inherit;
+  background: var(--bg-main);
+  color: var(--text-main);
   transition: all 0.3s;
 }
 
 .formGroup input:focus,
 .formGroup textarea:focus {
   outline: none;
-  border-color: #0066cc;
-  box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb, 0, 102, 204), 0.1);
 }
 
 .buttonGroup {
@@ -78,7 +81,7 @@
 }
 
 .saveBtn {
-  background-color: #0066cc;
+  background-color: var(--primary-color);
   color: white;
   padding: 10px 20px;
   border: none;
@@ -90,7 +93,7 @@
 }
 
 .saveBtn:hover:not(:disabled) {
-  background-color: #0052a3;
+  opacity: 0.9;
 }
 
 .saveBtn:disabled {
@@ -99,10 +102,10 @@
 }
 
 .cancelBtn {
-  background-color: #f0f2f5;
-  color: #333;
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  border: 1px solid var(--border-main);
   padding: 10px 20px;
-  border: none;
   border-radius: 4px;
   font-size: 14px;
   font-weight: 600;
@@ -111,7 +114,7 @@
 }
 
 .cancelBtn:hover {
-  background-color: #e0e2e5;
+  background-color: var(--bg-card);
 }
 
 .plansGrid {
@@ -122,7 +125,8 @@
 }
 
 .planCard {
-  border: 2px solid #e0e0e0;
+  border: 2px solid var(--border-main);
+  background: var(--bg-card);
   border-radius: 8px;
   padding: 20px;
   text-align: center;
@@ -130,26 +134,26 @@
 }
 
 .planCard:hover {
-  border-color: #0066cc;
-  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.2);
+  border-color: var(--primary-color);
+  box-shadow: var(--shadow-lg);
 }
 
 .planCard h4 {
   margin: 0 0 10px 0;
   font-size: 18px;
-  color: #333;
+  color: var(--text-main);
 }
 
 .price {
   margin: 0 0 15px 0;
   font-size: 28px;
   font-weight: 700;
-  color: #0066cc;
+  color: var(--primary-color);
 }
 
 .price span {
   font-size: 14px;
-  color: #666;
+  color: var(--text-dim);
 }
 
 .planCard ul {
@@ -161,9 +165,9 @@
 
 .planCard li {
   padding: 8px 0;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--border-main);
   font-size: 13px;
-  color: #666;
+  color: var(--text-dim);
 }
 
 .planCard li:last-child {

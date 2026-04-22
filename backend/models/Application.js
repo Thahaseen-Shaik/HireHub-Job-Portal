@@ -25,7 +25,8 @@ class Application {
       ADD COLUMN IF NOT EXISTS test_passed BOOLEAN DEFAULT FALSE,
       ADD COLUMN IF NOT EXISTS test_submitted_at TIMESTAMP,
       ADD COLUMN IF NOT EXISTS interview_called BOOLEAN DEFAULT FALSE,
-      ADD COLUMN IF NOT EXISTS interview_called_at TIMESTAMP;
+      ADD COLUMN IF NOT EXISTS interview_called_at TIMESTAMP,
+      ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
     `;
 
     await pool.query(query);

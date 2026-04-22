@@ -38,11 +38,11 @@
 }
 
 .empty {
-  background: #ffffff;
-  border: 1px solid #dce8f6;
+  background: var(--bg-card);
+  border: 1px solid var(--border-main);
   border-radius: 10px;
   padding: 20px;
-  color: #4c6787;
+  color: var(--text-dim);
 }
 
 .grid {
@@ -52,12 +52,13 @@
 }
 
 .card {
-  background: #ffffff;
-  border: 1px solid #dce8f5;
+  background: var(--bg-card);
+  border: 1px solid var(--border-main);
   border-radius: 12px;
   padding: 16px;
   display: flex;
   flex-direction: column;
+  box-shadow: var(--shadow);
 }
 
 .cardHeader {
@@ -70,7 +71,7 @@
 .cardHeader h3 {
   margin: 0;
   font-size: 18px;
-  color: #143f6c;
+  color: var(--primary-color);
 }
 
 .badge {
@@ -85,7 +86,7 @@
 
 .company {
   margin: 8px 0;
-  color: #3e5f84;
+  color: var(--text-main);
   font-weight: 600;
 }
 
@@ -94,15 +95,16 @@
   display: inline-block;
   font-size: 11px;
   font-weight: 700;
-  color: #12538e;
-  background: #e9f2ff;
+  color: var(--primary-color);
+  background: var(--bg-main);
   border-radius: 999px;
   padding: 4px 10px;
+  border: 1px solid var(--border-main);
 }
 
 .desc {
   margin: 0;
-  color: #4f6f93;
+  color: var(--text-dim);
   font-size: 14px;
   line-height: 1.4;
   min-height: 58px;
@@ -116,13 +118,13 @@
 
 .meta p {
   margin: 0;
-  color: #274d78;
+  color: var(--text-dim);
   font-size: 13px;
 }
 
 .applyBtn {
   margin-top: auto;
-  background: #1f5a98;
+  background: var(--primary-color);
   color: #fff;
   border-radius: 8px;
   border: 0;
@@ -141,22 +143,24 @@
 .modalBackdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: var(--backdrop-bg);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
   padding: 16px;
+  backdrop-filter: blur(4px);
 }
 
 .modal {
-  background: #fff;
+  background: var(--bg-card);
   width: min(640px, 96vw);
   border-radius: 12px;
-  border: 1px solid #dce8f5;
+  border: 1px solid var(--border-main);
   padding: 16px;
   max-height: 90vh;
   overflow: auto;
+  box-shadow: var(--shadow-lg);
 }
 
 .modal h3 {

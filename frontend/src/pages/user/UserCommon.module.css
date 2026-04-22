@@ -1,13 +1,14 @@
 .card {
-  background: #fff;
-  border: 1px solid #dce8f6;
+  background: var(--bg-card);
+  border: 1px solid var(--border-main);
   border-radius: 12px;
   padding: 16px;
+  box-shadow: var(--shadow);
 }
 
 .card h3 {
   margin: 0 0 10px;
-  color: #184b7f;
+  color: var(--primary-color);
 }
 
 .list {
@@ -16,28 +17,28 @@
 }
 
 .item {
-  border: 1px solid #e7eef8;
+  border: 1px solid var(--border-main);
   border-radius: 10px;
   padding: 10px 12px;
-  background: #fcfdff;
+  background: var(--bg-main);
 }
 
 .itemTitle {
   margin: 0;
   font-size: 15px;
   font-weight: 700;
-  color: #1c4c7f;
+  color: var(--text-main);
 }
 
 .itemSub {
   margin: 3px 0;
-  color: #4f6f94;
+  color: var(--text-dim);
   font-size: 13px;
 }
 
 .itemMeta {
   margin: 0;
-  color: #6580a0;
+  color: var(--text-dim);
   font-size: 12px;
 }
 
@@ -59,13 +60,14 @@
   padding: 4px 10px;
   font-size: 11px;
   font-weight: 700;
-  background: #e8f2ff;
-  color: #184a7d;
+  background: var(--bg-main);
+  color: var(--primary-color);
+  border: 1px solid var(--border-main);
 }
 
 .empty {
   margin: 0;
-  color: #617d9c;
+  color: var(--text-dim);
 }
 
 .alert {
@@ -111,7 +113,7 @@
   display: grid;
   gap: 8px;
   padding-left: 16px;
-  color: #4f6f94;
+  color: var(--text-dim);
   margin: 0;
 }
 
@@ -123,20 +125,20 @@
 
 .helpCard {
   border-radius: 10px;
-  border: 1px solid #dfebf8;
-  background: #f9fcff;
+  border: 1px solid var(--border-main);
+  background: var(--bg-main);
   padding: 12px;
 }
 
 .helpCard h4 {
   margin: 0 0 6px;
-  color: #184b80;
+  color: var(--primary-color);
 }
 
 .helpCard p {
   margin: 0;
   font-size: 13px;
-  color: #4f6f94;
+  color: var(--text-dim);
 }
 
 .rowActions {
@@ -154,7 +156,7 @@
 }
 
 .actionBtn {
-  background: #1f5a98;
+  background: var(--primary-color);
   color: #fff;
   border: 0;
   border-radius: 8px;
@@ -181,22 +183,24 @@
 .modalBackdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: var(--backdrop-bg);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
   padding: 16px;
+  backdrop-filter: blur(4px);
 }
 
 .modal {
   width: min(860px, 96vw);
   max-height: 90vh;
   overflow: auto;
-  background: #fff;
+  background: var(--bg-card);
   border-radius: 12px;
-  border: 1px solid #dce8f6;
+  border: 1px solid var(--border-main);
   padding: 16px;
+  box-shadow: var(--shadow-lg);
 }
 
 .quizList {
@@ -206,15 +210,15 @@
 }
 
 .quizCard {
-  border: 1px solid #e4edf8;
+  border: 1px solid var(--border-main);
   border-radius: 10px;
-  background: #fbfdff;
+  background: var(--bg-main);
   padding: 10px 12px;
 }
 
 .quizQ {
   margin: 0 0 8px;
-  color: #1b4b7e;
+  color: var(--text-main);
   font-size: 14px;
   font-weight: 700;
 }
@@ -229,7 +233,7 @@
   gap: 8px;
   align-items: flex-start;
   font-size: 13px;
-  color: #3d5f84;
+  color: var(--text-dim);
 }
 
 .modalActions {

@@ -6,8 +6,8 @@
 }
 
 .spinner {
-  border: 4px solid #e8eff7;
-  border-top: 4px solid #1f5a98;
+  border: 4px solid var(--bg-main);
+  border-top: 4px solid var(--primary-color);
   border-radius: 50%;
   width: 42px;
   height: 42px;
@@ -20,9 +20,9 @@
 }
 
 .alert {
-  background: #fdebec;
-  border: 1px solid #f8c8cc;
-  color: #7a2430;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #f87171;
   padding: 12px 14px;
   border-radius: 8px;
   margin-bottom: 18px;
@@ -35,16 +35,17 @@
 }
 
 .chartCard {
-  background: white;
+  background: var(--bg-card);
   border-radius: 8px;
   padding: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-main);
 }
 
 .chartCard h3 {
   margin: 0 0 16px 0;
   font-size: 18px;
-  color: #333;
+  color: var(--text-main);
 }
 
 .chartBody {
@@ -62,8 +63,8 @@
 .statCard {
   border-radius: 12px;
   padding: 16px;
-  background: linear-gradient(145deg, #ffffff 0%, #edf4ff 100%);
-  border: 1px solid #d8e8fb;
+  background: var(--bg-card);
+  border: 1px solid var(--border-main);
   display: flex;
   align-items: center;
   gap: 12px;
@@ -82,7 +83,7 @@
 .statLabel {
   margin: 0;
   font-size: 12px;
-  color: #4f6480;
+  color: var(--text-dim);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.6px;
@@ -91,7 +92,7 @@
 .statValue {
   margin: 6px 0 0;
   font-size: 30px;
-  color: #16497d;
+  color: var(--primary-color);
   font-weight: 800;
 }
 

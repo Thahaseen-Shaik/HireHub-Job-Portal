@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { userPortalAPI } from '../../api';
 import UserLayout from '../../components/user/UserLayout';
+import ActivityFeed from '../../components/common/ActivityFeed';
 import styles from './UserHome.module.css';
 
 const UserHome = () => {
@@ -101,6 +102,8 @@ const UserHome = () => {
             </div>
           )}
         </article>
+
+
       </section>
     </UserLayout>
   );

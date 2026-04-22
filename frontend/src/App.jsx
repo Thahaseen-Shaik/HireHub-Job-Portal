@@ -2,13 +2,20 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { SettingsProvider } from './context/SettingsContext';
+import { ThemeProvider } from './context/ThemeContext';
+import ChatWidget from './components/ChatWidget';
 
 // Pages
 import OpeningPage from './components/pages/OpeningPage';
 import LoginPage from './components/auth/LoginPage';
 import RegisterPage from './components/auth/RegisterPage';
+import ForgotPasswordPage from './components/auth/ForgotPasswordPage';
+import ResetPasswordPage from './components/auth/ResetPasswordPage';
 import OTPVerificationPage from './components/auth/OTPVerificationPage';
 import Companies from './pages/Companies';
+import TermsAndConditions from './pages/TermsAndConditions';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import Dashboard from './pages/Dashboard';
 import Users from './pages/Users';
 import Subscriptions from './pages/Subscriptions';
 import Logs from './pages/Logs';
@@ -120,7 +127,11 @@ const AppContent = () => {
       <Route path="/" element={<OpeningPageWrapper />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/verify-otp" element={<OTPVerificationPage />} />
+      <Route path="/terms" element={<TermsAndConditions />} />
+      <Route path="/privacy" element={<PrivacyPolicy />} />
 
       <Route
         path="/dashboard"
@@ -200,7 +211,6 @@ const AppContent = () => {
           </ProtectedRoute>
         }
       />
-
       {/* Manager Route */}
       <Route
         path="/manager/dashboard"
@@ -285,6 +295,7 @@ const AppContent = () => {
         }
       />
 
+
       <Route
         path="*"
         element={token && user ? <Navigate to={getDefaultDashboardPath(user.role)} replace /> : <Navigate to="/" replace />}
@@ -307,11 +318,14 @@ const OpeningPageWrapper = () => {
 export default function App() {
   return (
     <Router>
-      <SettingsProvider>
-        <AuthProvider>
-          <AppContent />
-        </AuthProvider>
-      </SettingsProvider>
+      <ThemeProvider>
+        <SettingsProvider>
+          <AuthProvider>
+            <AppContent />
+            <ChatWidget />
+          </AuthProvider>
+        </SettingsProvider>
+      </ThemeProvider>
     </Router>
   );
 }

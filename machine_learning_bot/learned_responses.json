@@ -1,0 +1,8 @@
+{
+    "forgot password": "forgot_password",
+    "schedule an interview": "manager_interviews",
+    "subscription plan price": "subscriptions",
+    "how are you": "greeting",
+    "pizza": "CUSTOM_REPLY|I don't serve food, I find you jobs!",
+    "good evening": "CUSTOM_REPLY|Good Evening, How can i help you ?"
+}

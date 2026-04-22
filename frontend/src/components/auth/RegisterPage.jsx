@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import styles from './RegisterPage.module.css';
@@ -13,8 +13,23 @@ const RegisterPage = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [agreedToLegal, setAgreedToLegal] = useState(false);
   const navigate = useNavigate();
   const { register } = useAuth();
+
+  useEffect(() => {
+    const checkStatus = () => {
+      const hasTerms = localStorage.getItem('agreedToTerms') === 'true';
+      const hasPrivacy = localStorage.getItem('agreedToPrivacy') === 'true';
+      if (hasTerms && hasPrivacy) {
+        setAgreedToLegal(true);
+      }
+    };
+
+    checkStatus();
+    window.addEventListener('storage', checkStatus);
+    return () => window.removeEventListener('storage', checkStatus);
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -27,6 +42,19 @@ const RegisterPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+
+    const hasTerms = localStorage.getItem('agreedToTerms') === 'true';
+    const hasPrivacy = localStorage.getItem('agreedToPrivacy') === 'true';
+
+    if (!hasTerms || !hasPrivacy) {
+      setError('You forgot to click and accept the Terms & Conditions and Privacy Policy links first.');
+      return;
+    }
+
+    if (!agreedToLegal) {
+      setError('You must have to accept the terms and conditions checkbox.');
+      return;
+    }
 
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
@@ -109,6 +137,26 @@ const RegisterPage = () => {
               <option value="company_manager">Company Manager</option>
               <option value="admin">Admin</option>
             </select>
+          </div>
+
+          <div className={styles.checkboxGroup}>
+            <input 
+              type="checkbox" 
+              id="agreeLegalReg" 
+              checked={agreedToLegal} 
+              onChange={(e) => setAgreedToLegal(e.target.checked)} 
+              onClick={(e) => {
+                const hasTerms = localStorage.getItem('agreedToTerms') === 'true';
+                const hasPrivacy = localStorage.getItem('agreedToPrivacy') === 'true';
+                if (e.target.checked && (!hasTerms || !hasPrivacy)) {
+                  e.preventDefault();
+                  setError('Please open both the Terms & Conditions and Privacy Policy links and check the agreement boxes inside them first.');
+                }
+              }}
+            />
+            <label htmlFor="agreeLegalReg">
+              I agree to the <a href="/terms" target="_blank" rel="noopener noreferrer">Terms and Conditions</a> and <a href="/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
+            </label>
           </div>
 
           <button type="submit" className={styles.submitBtn} disabled={loading}>

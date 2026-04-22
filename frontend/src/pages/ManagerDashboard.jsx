@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { managerAPI } from '../api';
 import { useAuth } from '../context/AuthContext';
 import ManagerLayout from '../components/manager/ManagerLayout';
+import ActivityFeed from '../components/common/ActivityFeed';
 import styles from './ManagerDashboard.module.css';
 
 const APPLY_MODE_OPTIONS = [
@@ -50,7 +51,7 @@ const formatDateTime = (value) => (value ? new Date(value).toLocaleString() : 'N
 
 const ManagerDashboard = () => {
   const { user } = useAuth();
-  const [activeSection, setActiveSection] = useState('dashboard');
+  const [activeSection, setActiveSection] = useState('overview');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -143,6 +144,102 @@ const ManagerDashboard = () => {
 
   useEffect(() => {
     loadData();
+
+    const handleScheduleConfirm = async (formData = null) => {
+      const dataToSubmit = formData || { ...newInterviewForm, jobId: newInterviewForm.jobId ? Number(newInterviewForm.jobId) : null };
+      return withSave(() => managerAPI.createInterview(dataToSubmit), 'Failed to schedule interview');
+    };
+
+    const handleUIAction = (e) => {
+      const { action, entities } = e.detail;
+      if (action === 'OPEN_INTERVIEWS') {
+        setActiveSection('interviews');
+        
+        if (entities) {
+          setNewInterviewForm(prev => {
+            const update = { ...prev };
+            if (entities.email) update.candidateEmail = entities.email;
+            if (entities.interviewType) update.interviewType = entities.interviewType;
+            
+            if (entities.time_info) {
+              const date = new Date();
+              const info = entities.time_info.toLowerCase();
+              
+              // Smart Date Parsing (Day & Month)
+              const monthMap = { jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5, jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11 };
+              const monthMatch = info.match(/(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*/);
+              const dayMatch = info.match(/(\d{1,2})(?:st|nd|rd|th)?(?!\d|:|\.)/); // Avoid matching times like 7:00
+              
+              if (monthMatch && dayMatch) {
+                const monthStr = monthMatch[1].substring(0, 3);
+                const day = parseInt(dayMatch[1]);
+                date.setMonth(monthMap[monthStr]);
+                date.setDate(day);
+              } else if (info.includes('tomorrow')) {
+                date.setDate(date.getDate() + 1);
+              }
+              
+              const timeMatch = info.match(/(\d{1,2})[:.]?(\d{2})?\s?(pm|am)?/i);
+              if (timeMatch) {
+                let hours = parseInt(timeMatch[1]);
+                const mins = timeMatch[2] || "00";
+                const ampm = timeMatch[3]?.toLowerCase();
+                
+                if (ampm === 'pm' && hours < 12) hours += 12;
+                if (ampm === 'am' && hours === 12) hours = 0;
+                
+                date.setHours(hours, parseInt(mins), 0, 0);
+              } else {
+                date.setHours(10, 0, 0, 0);
+              }
+              
+              const year = date.getFullYear();
+              const month = String(date.getMonth() + 1).padStart(2, '0');
+              const day = String(date.getDate()).padStart(2, '0');
+              const h = String(date.getHours()).padStart(2, '0');
+              const m = String(date.getMinutes()).padStart(2, '0');
+              update.scheduledAt = `${year}-${month}-${day}T${h}:${m}`;
+            }
+            return update;
+          });
+        }
+      } else if (action === 'CONFIRM_SCHEDULE') {
+        handleScheduleConfirm();
+      } else if (action === 'CREATE_JOB' && e.detail.payload) {
+        const { title, description, location } = e.detail.payload;
+        const autoFilledData = {
+            ...emptyJobForm(),
+            title: title || 'New Opening',
+            description: description || 'No description provided',
+            location: location || 'Remote'
+        };
+        
+        setNewJobForm(autoFilledData);
+        setActiveSection('jobs');
+        
+        withSave(() => managerAPI.createJob(autoFilledData), 'Failed to auto-create job from chat')
+          .then(() => loadData());
+      } else if (action === 'UPDATE_PROFILE' && e.detail.payload) {
+        const p = e.detail.payload;
+        setProfileForm(prev => {
+            const up = { ...prev };
+            if (p.fullName) up.name = p.fullName;
+            if (p.phone) up.phone = p.phone;
+            if (p.department) up.department = p.department;
+            if (p.bio) up.bio = p.bio;
+            
+            // Execute the background save outside the return block using the constructed object
+            managerAPI.updateProfile(up).catch(console.error);
+            return up;
+        });
+        setActiveSection('profile');
+      } else if (action === 'NAVIGATE_SECTION' && e.detail.payload?.section) {
+        setActiveSection(e.detail.payload.section);
+      }
+    };
+
+    window.addEventListener('hirehub-ui-action', handleUIAction);
+    return () => window.removeEventListener('hirehub-ui-action', handleUIAction);
   }, []);
 
   const withSave = async (fn, fallback) => {
@@ -284,13 +381,17 @@ const ManagerDashboard = () => {
   const renderSection = () => {
     if (loading) return tableLoading;
 
-    if (activeSection === 'dashboard') {
+    if (activeSection === 'overview') {
       return (
         <div className={styles.grid}>
-          <div className={styles.card}><h3>Applications</h3><p className={styles.bigNumber}>{stats?.totalApplications || 0}</p></div>
-          <div className={styles.card}><h3>Openings</h3><p className={styles.bigNumber}>{stats?.totalOpenings || 0}</p></div>
-          <div className={styles.card}><h3>Cleared Tests</h3><p className={styles.bigNumber}>{stats?.clearedTests || 0}</p></div>
-          <div className={styles.card}><h3>Cleared Interviews</h3><p className={styles.bigNumber}>{stats?.clearedInterviews || 0}</p></div>
+          <div className={styles.card}>
+            <h3>Dashboard Stats</h3>
+            <div className={styles.statsGrid}>
+              <div className={styles.statItem}><p className={styles.mutedText}>Users</p> <p className={styles.bigNumber}>{users.length}</p></div>
+              <div className={styles.statItem}><p className={styles.mutedText}>Active Jobs</p> <p className={styles.bigNumber}>{jobs.filter(j=>j.status==='open').length}</p></div>
+              <div className={styles.statItem}><p className={styles.mutedText}>Pending Apps</p> <p className={styles.bigNumber}>{applications.filter(a=>a.status==='applied').length}</p></div>
+            </div>
+          </div>
         </div>
       );
     }
@@ -298,13 +399,27 @@ const ManagerDashboard = () => {
     if (activeSection === 'profile') {
       return (
         <div className={styles.card}>
-          <h3>Manager Profile</h3>
+          <h3>👤 Manager Profile</h3>
           <div className={styles.form}>
-            <input value={profileForm.name} onChange={(e) => setProfileForm((p) => ({ ...p, name: e.target.value }))} placeholder="Name" />
-            <input value={profileForm.phone} onChange={(e) => setProfileForm((p) => ({ ...p, phone: e.target.value }))} placeholder="Phone" />
-            <input value={profileForm.department} onChange={(e) => setProfileForm((p) => ({ ...p, department: e.target.value }))} placeholder="Department" />
-            <textarea value={profileForm.bio} onChange={(e) => setProfileForm((p) => ({ ...p, bio: e.target.value }))} placeholder="Bio" />
-            <button type="button" className={styles.btnPrimary} disabled={saving} onClick={() => withSave(() => managerAPI.updateProfile(profileForm), 'Failed to update profile')}>Save Profile</button>
+            <div className={styles.formGroup}>
+              <label>Full Name</label>
+              <input value={profileForm.name} onChange={(e) => setProfileForm((p) => ({ ...p, name: e.target.value }))} placeholder="Enter your full name" />
+            </div>
+            <div className={styles.formGroup}>
+              <label>Phone Number</label>
+              <input value={profileForm.phone} onChange={(e) => setProfileForm((p) => ({ ...p, phone: e.target.value }))} placeholder="e.g. +1 234 567 890" />
+            </div>
+            <div className={styles.formGroup}>
+              <label>Department</label>
+              <input value={profileForm.department} onChange={(e) => setProfileForm((p) => ({ ...p, department: e.target.value }))} placeholder="e.g. Engineering, HR" />
+            </div>
+            <div className={styles.formGroup}>
+              <label>Bio</label>
+              <textarea value={profileForm.bio} onChange={(e) => setProfileForm((p) => ({ ...p, bio: e.target.value }))} placeholder="Briefly describe your role and experience" />
+            </div>
+            <button type="button" className={styles.btnPrimary} disabled={saving} onClick={() => withSave(() => managerAPI.updateProfile(profileForm), 'Failed to update profile')}>
+              {saving ? 'Saving...' : 'Save Profile Settings'}
+            </button>
           </div>
         </div>
       );
@@ -313,62 +428,24 @@ const ManagerDashboard = () => {
     if (activeSection === 'users') {
       return (
         <div className={styles.card}>
-          <h3>User Management</h3>
-          <table className={styles.table}><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Action</th></tr></thead>
-            <tbody>{visibleUsers.map((u) => (
-              <tr key={u.id}>
-                <td>{u.name}</td><td>{u.email}</td><td>{u.role}</td><td>{u.is_blocked ? 'Blocked' : 'Active'}</td>
-                <td>
-                  <div className={styles.actionsRow}>
-                    <button type="button" className={u.is_blocked ? styles.btnSuccess : styles.btnDanger} disabled={saving || u.id === user?.id} onClick={() => withSave(() => managerAPI.updateUserBlockStatus(u.id, !u.is_blocked), 'Failed to update user status')}>{u.is_blocked ? 'Unblock' : 'Block'}</button>
-                    <button type="button" className={styles.btnDanger} disabled={saving || u.id === user?.id} onClick={() => { if (window.confirm('Are you sure you want to delete this user?')) withSave(() => managerAPI.deleteUser(u.id), 'Failed to delete user'); }}>Delete</button>
-                  </div>
-                </td>
-              </tr>
-            ))}</tbody>
-          </table>
-        </div>
-      );
-    }
-
-    if (activeSection === 'jobs') {
-      return (
-        <div className={styles.grid}>
-          <div className={styles.card}>
-            <h3>Create Job</h3>
-            <form onSubmit={createJob} className={styles.form}>
-              <input type="number" placeholder="Company ID (optional)" value={newJobForm.companyId} onChange={(e) => setNewJobForm((p) => ({ ...p, companyId: e.target.value }))} />
-              <input type="text" placeholder="Job Title" value={newJobForm.title} onChange={(e) => setNewJobForm((p) => ({ ...p, title: e.target.value }))} required />
-              <textarea placeholder="Job Description" value={newJobForm.description} onChange={(e) => setNewJobForm((p) => ({ ...p, description: e.target.value }))} />
-              <input type="text" placeholder="Location" value={newJobForm.location} onChange={(e) => setNewJobForm((p) => ({ ...p, location: e.target.value }))} />
-              <select value={newJobForm.applyMode} onChange={(e) => setNewJobForm((p) => ({ ...p, applyMode: e.target.value }))}>{APPLY_MODE_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}</select>
-              {newJobForm.applyMode === 'predefined_form' && <select value={newJobForm.predefinedFormKey} onChange={(e) => setNewJobForm((p) => ({ ...p, predefinedFormKey: e.target.value }))}><option value="basic_screening">Basic Screening</option><option value="developer_screening">Developer Screening</option></select>}
-              {newJobForm.applyMode === 'google_form' && <input type="url" placeholder="Google Form Link" value={newJobForm.googleFormUrl} onChange={(e) => setNewJobForm((p) => ({ ...p, googleFormUrl: e.target.value }))} required />}
-              {newJobForm.applyMode === 'custom_form' && (
-                <textarea
-                  placeholder="Custom field labels (comma separated). Example: Portfolio URL, Current CTC, Notice Period"
-                  value={newJobForm.customFormFields.map((field) => field.label).filter(Boolean).join(', ')}
-                  onChange={(e) => {
-                    const fields = e.target.value
-                      .split(',')
-                      .map((item) => item.trim())
-                      .filter(Boolean)
-                      .map((label) => ({ label, key: '', type: 'text', required: true }));
-                    setNewJobForm((p) => ({ ...p, customFormFields: fields.length ? fields : [{ label: '', key: '', type: 'text', required: false }] }));
-                  }}
-                />
-              )}
-              <textarea placeholder="Manager instructions (optional)" value={newJobForm.managerInstructions} onChange={(e) => setNewJobForm((p) => ({ ...p, managerInstructions: e.target.value }))} />
-              <button type="submit" className={styles.btnPrimary} disabled={saving}>{saving ? 'Saving...' : 'Create Opening'}</button>
-            </form>
-          </div>
-          <div className={styles.card}>
-            <h3>Job Updates</h3>
-            <table className={styles.table}><thead><tr><th>Title</th><th>Company</th><th>Apply Type</th><th>Status</th><th>Action</th></tr></thead>
-              <tbody>{jobs.map((job) => (
-                <tr key={job.id}>
-                  <td>{job.title}</td><td>{job.company_name}</td><td>{APPLY_MODE_LABELS[job.apply_mode] || 'Send Directly'}</td><td>{job.status}</td>
-                  <td><button type="button" className={job.status === 'open' ? styles.btnWarning : styles.btnSuccess} disabled={saving} onClick={() => withSave(() => managerAPI.updateJobStatus(job.id, job.status === 'open' ? 'closed' : 'open'), 'Failed to update job status')}>{job.status === 'open' ? 'Close' : 'Open'}</button></td>
+          <h3>👥 User Management</h3>
+          <div className={styles.tableContainer}>
+            <table className={styles.table}>
+              <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Action</th></tr></thead>
+              <tbody>{visibleUsers.map((u) => (
+                <tr key={u.id}>
+                  <td><strong>{u.name}</strong></td>
+                  <td>{u.email}</td>
+                  <td><span className={styles.userBadge}>{u.role}</span></td>
+                  <td>{u.is_blocked ? <span className={styles.failTag}>Blocked</span> : <span className={styles.passTag}>Active</span>}</td>
+                  <td>
+                    <div className={styles.actionsRow}>
+                      <button type="button" className={u.is_blocked ? styles.btnSuccess : styles.btnDanger} disabled={saving || u.id === user?.id} onClick={() => withSave(() => managerAPI.updateUserBlockStatus(u.id, !u.is_blocked), 'Failed to update user status')}>
+                        {u.is_blocked ? 'Unblock' : 'Block'}
+                      </button>
+                      <button type="button" className={styles.btnDanger} disabled={saving || u.id === user?.id} onClick={() => { if (window.confirm('Are you sure you want to delete this user?')) withSave(() => managerAPI.deleteUser(u.id), 'Failed to delete user'); }}>Delete</button>
+                    </div>
+                  </td>
                 </tr>
               ))}</tbody>
             </table>
@@ -377,13 +454,96 @@ const ManagerDashboard = () => {
       );
     }
 
+    if (activeSection === 'jobs') {
+      return (
+        <div className={styles.grid}>
+          <div className={styles.card}>
+            <h3>🆕 Create Job Opening</h3>
+            <form onSubmit={createJob} className={styles.form}>
+              <div className={styles.formGroup}>
+                <label>Company ID (Optional)</label>
+                <input type="number" placeholder="Leave blank if not applicable" value={newJobForm.companyId} onChange={(e) => setNewJobForm((p) => ({ ...p, companyId: e.target.value }))} />
+              </div>
+              <div className={styles.formGroup}>
+                <label>Job Title</label>
+                <input type="text" placeholder="e.g. Software Engineer" value={newJobForm.title} onChange={(e) => setNewJobForm((p) => ({ ...p, title: e.target.value }))} required />
+              </div>
+              <div className={styles.formGroup}>
+                <label>Job Description</label>
+                <textarea placeholder="Outline requirements and responsibilities" value={newJobForm.description} onChange={(e) => setNewJobForm((p) => ({ ...p, description: e.target.value }))} />
+              </div>
+              <div className={styles.formGroup}>
+                <label>Location</label>
+                <input type="text" placeholder="e.g. Remote, New York" value={newJobForm.location} onChange={(e) => setNewJobForm((p) => ({ ...p, location: e.target.value }))} />
+              </div>
+              <div className={styles.formGroup}>
+                <label>Application Mode</label>
+                <select value={newJobForm.applyMode} onChange={(e) => setNewJobForm((p) => ({ ...p, applyMode: e.target.value }))}>{APPLY_MODE_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}</select>
+              </div>
+              {newJobForm.applyMode === 'predefined_form' && (
+                <div className={styles.formGroup}>
+                  <label>Select Predefined Form</label>
+                  <select value={newJobForm.predefinedFormKey} onChange={(e) => setNewJobForm((p) => ({ ...p, predefinedFormKey: e.target.value }))}><option value="basic_screening">Basic Screening</option><option value="developer_screening">Developer Screening</option></select>
+                </div>
+              )}
+              {newJobForm.applyMode === 'google_form' && (
+                <div className={styles.formGroup}>
+                  <label>Google Form URL</label>
+                  <input type="url" placeholder="https://docs.google.com/forms/..." value={newJobForm.googleFormUrl} onChange={(e) => setNewJobForm((p) => ({ ...p, googleFormUrl: e.target.value }))} required />
+                </div>
+              )}
+              {newJobForm.applyMode === 'custom_form' && (
+                <div className={styles.formGroup}>
+                  <label>Custom Field Labels (comma separated)</label>
+                  <textarea
+                    placeholder="e.g. Portfolio URL, Current CTC, Notice Period"
+                    value={newJobForm.customFormFields.map((field) => field.label).filter(Boolean).join(', ')}
+                    onChange={(e) => {
+                      const fields = e.target.value
+                        .split(',')
+                        .map((item) => item.trim())
+                        .filter(Boolean)
+                        .map((label) => ({ label, key: '', type: 'text', required: true }));
+                      setNewJobForm((p) => ({ ...p, customFormFields: fields.length ? fields : [{ label: '', key: '', type: 'text', required: false }] }));
+                    }}
+                  />
+                </div>
+              )}
+              <div className={styles.formGroup}>
+                <label>Manager Instructions (Internal Only)</label>
+                <textarea placeholder="e.g. Priority hire" value={newJobForm.managerInstructions} onChange={(e) => setNewJobForm((p) => ({ ...p, managerInstructions: e.target.value }))} />
+              </div>
+              <button type="submit" className={styles.btnPrimary} disabled={saving}>{saving ? 'Processing...' : '🚀 Create Opening'}</button>
+            </form>
+          </div>
+          <div className={styles.card}>
+            <h3>📂 Active Openings</h3>
+            <div className={styles.tableContainer}>
+              <table className={styles.table}>
+                <thead><tr><th>Title</th><th>Company</th><th>Apply Type</th><th>Status</th><th>Action</th></tr></thead>
+                <tbody>{jobs.map((job) => (
+                  <tr key={job.id}>
+                    <td><strong>{job.title}</strong></td>
+                    <td>{job.company_name}</td>
+                    <td>{APPLY_MODE_LABELS[job.apply_mode] || 'Send Directly'}</td>
+                    <td>{job.status === 'open' ? <span className={styles.passTag}>Open</span> : <span className={styles.failTag}>Closed</span>}</td>
+                    <td><button type="button" className={job.status === 'open' ? styles.btnWarning : styles.btnSuccess} disabled={saving} onClick={() => withSave(() => managerAPI.updateJobStatus(job.id, job.status === 'open' ? 'closed' : 'open'), 'Failed to update job status')}>{job.status === 'open' ? 'Close' : 'Open'}</button></td>
+                  </tr>
+                ))}</tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     if (activeSection === 'applications') {
       return (
         <div className={styles.card}>
-          <h3>Applications</h3>
+          <h3>📄 Applications Management</h3>
           <div className={styles.toolbarRow}>
             <select value={atsJobId} onChange={(e) => setAtsJobId(e.target.value)}>
-              <option value="">Select Job For ATS</option>
+              <option value="">Select Job For ATS Scan</option>
               {applicationJobs.map((job) => (
                 <option key={job.job_id} value={job.job_id}>{job.job_title}</option>
               ))}
@@ -396,32 +556,38 @@ const ManagerDashboard = () => {
               placeholder="Shortlist Count"
             />
             <button type="button" className={styles.btnPrimary} disabled={saving || !atsJobId} onClick={runAtsShortlist}>
-              ATS Shortlist Top {atsShortlistCount}
+              🤖 Run ATS Filter (Top {atsShortlistCount})
             </button>
           </div>
-          <table className={styles.table}><thead><tr><th>Job</th><th>Candidate</th><th>Email</th><th>ATS Score</th><th>Status</th><th>Action</th></tr></thead>
-            <tbody>{applications.length === 0 ? <tr><td colSpan="6" className={styles.empty}>No applications found</td></tr> : applications.map((a) => (
-              <tr key={a.id}>
-                <td>{a.job_title}</td>
-                <td>{getApplicationCandidateName(a)}{renderApplicationDetails(a)}</td>
-                <td>{a.user_email}</td>
-                <td>
-                  {atsScores[a.id] ? (
-                    <div>
-                      <strong>{atsScores[a.id].score}%</strong>
-                      <p className={styles.mutedText}>{atsScores[a.id].reason}</p>
-                    </div>
-                  ) : 'N/A'}
-                </td>
-                <td>{a.status}</td>
-                <td><div className={styles.actionsRow}>
-                  <button type="button" className={styles.btnSuccess} disabled={saving || a.status === 'selected'} onClick={() => withSave(() => managerAPI.updateApplicationStatus(a.id, 'selected'), 'Failed to shortlist')}>Shortlist</button>
-                  <button type="button" className={styles.btnPrimary} disabled={saving} onClick={() => sendTestLink(a)}>Send Test Link</button>
-                  <button type="button" className={styles.btnDanger} disabled={saving || a.status === 'rejected'} onClick={() => withSave(() => managerAPI.updateApplicationStatus(a.id, 'rejected'), 'Failed to reject')}>Reject</button>
-                </div></td>
-              </tr>
-            ))}</tbody>
-          </table>
+          <div className={styles.tableContainer}>
+            <table className={styles.table}>
+              <thead><tr><th>Job Opening</th><th>Candidate</th><th>Email</th><th>ATS Score</th><th>Status</th><th>Action</th></tr></thead>
+              <tbody>{applications.length === 0 ? <tr><td colSpan="6" className={styles.empty}>No applications found</td></tr> : applications.map((a) => (
+                <tr key={a.id}>
+                  <td><strong>{a.job_title}</strong></td>
+                  <td>
+                    <div><strong>{getApplicationCandidateName(a)}</strong></div>
+                    {renderApplicationDetails(a)}
+                  </td>
+                  <td>{a.user_email}</td>
+                  <td>
+                    {atsScores[a.id] ? (
+                      <div>
+                        <span className={styles.bigNumber}>{atsScores[a.id].score}%</span>
+                        <p className={styles.mutedText}>{atsScores[a.id].reason}</p>
+                      </div>
+                    ) : <span className={styles.mutedText}>Not Scanned</span>}
+                  </td>
+                  <td><span className={a.status === 'selected' ? styles.passTag : a.status === 'rejected' ? styles.failTag : styles.pendingTag}>{a.status}</span></td>
+                  <td><div className={styles.actionsRow}>
+                    <button type="button" className={styles.btnSuccess} disabled={saving || a.status === 'selected'} onClick={() => withSave(() => managerAPI.updateApplicationStatus(a.id, 'selected'), 'Failed to shortlist')}>Shortlist</button>
+                    <button type="button" className={styles.btnPrimary} style={{ padding: '8px 12px' }} disabled={saving} onClick={() => sendTestLink(a)}>Test Link</button>
+                    <button type="button" className={styles.btnDanger} disabled={saving || a.status === 'rejected'} onClick={() => withSave(() => managerAPI.updateApplicationStatus(a.id, 'rejected'), 'Failed to reject')}>Reject</button>
+                  </div></td>
+                </tr>
+              ))}</tbody>
+            </table>
+          </div>
         </div>
       );
     }
@@ -429,23 +595,26 @@ const ManagerDashboard = () => {
     if (activeSection === 'test-links') {
       return (
         <div className={styles.card}>
-          <h3>Test Updates</h3>
-          <table className={styles.table}><thead><tr><th>ID</th><th>Candidate</th><th>Status</th><th>Score</th><th>Result</th><th>Updated</th><th>Action</th></tr></thead>
-            <tbody>{testLinks.length === 0 ? <tr><td colSpan="7" className={styles.empty}>No test updates yet</td></tr> : testLinks.map((link) => (
-              <tr key={link.id}>
-                <td>{link.id}</td>
-                <td>{link.candidate_email || 'N/A'}</td>
-                <td>{link.link_status}</td>
-                <td>{link.latest_score ?? 'N/A'}{link.latest_score !== null && link.latest_score !== undefined ? '%' : ''}</td>
-                <td>{link.is_passed ? <span className={styles.passTag}>Passed</span> : link.attempted_at ? <span className={styles.failTag}>Not Cleared</span> : <span className={styles.pendingTag}>Pending</span>}</td>
-                <td>{formatDateTime(link.updated_at)}</td>
-                <td><div className={styles.actionsRow}>
-                  <button type="button" className={styles.btnSuccess} disabled={saving || link.link_status === 'completed'} onClick={() => withSave(() => managerAPI.updateTestLink(link.id, { linkStatus: 'completed' }), 'Failed to update test link')}>Mark Completed</button>
-                  <button type="button" className={styles.btnPrimary} disabled={saving || !link.is_passed || link.interview_called} onClick={() => callInterview(link)}>{link.interview_called ? 'Interview Called' : 'Call for Interview'}</button>
-                </div></td>
-              </tr>
-            ))}</tbody>
-          </table>
+          <h3>🧪 Test Status Updates</h3>
+          <div className={styles.tableContainer}>
+            <table className={styles.table}>
+              <thead><tr><th>ID</th><th>Candidate</th><th>Status</th><th>Score</th><th>Result</th><th>Updated</th><th>Action</th></tr></thead>
+              <tbody>{testLinks.length === 0 ? <tr><td colSpan="7" className={styles.empty}>No test updates yet</td></tr> : testLinks.map((link) => (
+                <tr key={link.id}>
+                  <td>{link.id}</td>
+                  <td>{link.candidate_email || 'N/A'}</td>
+                  <td>{link.link_status}</td>
+                  <td>{link.latest_score ?? 'N/A'}{link.latest_score !== null && link.latest_score !== undefined ? '%' : ''}</td>
+                  <td>{link.is_passed ? <span className={styles.passTag}>Passed</span> : link.attempted_at ? <span className={styles.failTag}>Not Cleared</span> : <span className={styles.pendingTag}>Pending</span>}</td>
+                  <td>{formatDateTime(link.updated_at)}</td>
+                  <td><div className={styles.actionsRow}>
+                    <button type="button" className={styles.btnSuccess} disabled={saving || link.link_status === 'completed'} onClick={() => withSave(() => managerAPI.updateTestLink(link.id, { linkStatus: 'completed' }), 'Failed to update test link')}>Finish</button>
+                    <button type="button" className={styles.btnPrimary} disabled={saving || !link.is_passed || link.interview_called} onClick={() => callInterview(link)}>{link.interview_called ? 'Scheduled' : 'Call Candidate'}</button>
+                  </div></td>
+                </tr>
+              ))}</tbody>
+            </table>
+          </div>
         </div>
       );
     }
@@ -454,23 +623,51 @@ const ManagerDashboard = () => {
       return (
         <div className={styles.grid}>
           <div className={styles.card}>
-            <h3>Generate Interview</h3>
+            <h3>🗓️ Schedule Interview</h3>
             <form onSubmit={(e) => { e.preventDefault(); withSave(() => managerAPI.createInterview({ ...newInterviewForm, jobId: newInterviewForm.jobId ? Number(newInterviewForm.jobId) : null }), 'Failed to schedule interview'); }} className={styles.form}>
-              <input type="number" placeholder="Job ID (optional)" value={newInterviewForm.jobId} onChange={(e) => setNewInterviewForm((p) => ({ ...p, jobId: e.target.value }))} />
-              <input type="email" placeholder="Candidate Email" value={newInterviewForm.candidateEmail} onChange={(e) => setNewInterviewForm((p) => ({ ...p, candidateEmail: e.target.value }))} required />
-              <input type="datetime-local" value={newInterviewForm.scheduledAt} onChange={(e) => setNewInterviewForm((p) => ({ ...p, scheduledAt: e.target.value }))} required />
-              <button type="submit" className={styles.btnPrimary} disabled={saving}>Generate Interview</button>
+              <div className={styles.formGroup}>
+                <label>Job ID (optional)</label>
+                <input type="number" placeholder="Enter Job ID" value={newInterviewForm.jobId} onChange={(e) => setNewInterviewForm((p) => ({ ...p, jobId: e.target.value }))} />
+              </div>
+              <div className={styles.formGroup}>
+                <label>Candidate Email</label>
+                <input type="email" placeholder="email@example.com" value={newInterviewForm.candidateEmail} onChange={(e) => setNewInterviewForm((p) => ({ ...p, candidateEmail: e.target.value }))} required />
+              </div>
+              <div className={styles.formGroup}>
+                <label>Interview Date & Time</label>
+                <input type="datetime-local" value={newInterviewForm.scheduledAt} onChange={(e) => setNewInterviewForm((p) => ({ ...p, scheduledAt: e.target.value }))} required />
+              </div>
+              <div className={styles.formGroup}>
+                <label>Interview Type</label>
+                <select 
+                  value={newInterviewForm.interviewType} 
+                  onChange={(e) => setNewInterviewForm((p) => ({ ...p, interviewType: e.target.value }))}
+                  className={styles.select}
+                  required
+                >
+                  <option value="Technical">Technical</option>
+                  <option value="HR">HR</option>
+                  <option value="Cultural">Cultural</option>
+                  <option value="System Design">System Design</option>
+                  <option value="General">General</option>
+                </select>
+              </div>
+              <button type="submit" className={styles.btnPrimary} disabled={saving}>Confirm Schedule</button>
             </form>
           </div>
           <div className={styles.card}>
-            <h3>Interview Details</h3>
-            <table className={styles.table}><thead><tr><th>Candidate</th><th>Type</th><th>Schedule</th><th>Status</th><th>Action</th></tr></thead>
-              <tbody>{interviews.map((i) => <tr key={i.id}><td>{i.candidate_email}</td><td>{i.interview_type}</td><td>{formatDateTime(i.scheduled_at)}</td><td>{i.status}</td><td><button type="button" className={styles.btnSuccess} disabled={saving || i.status === 'completed'} onClick={() => withSave(() => managerAPI.updateInterviewStatus(i.id, 'completed'), 'Failed to update interview status')}>Complete</button></td></tr>)}</tbody>
-            </table>
+            <h3>📜 Upcoming Interviews</h3>
+            <div className={styles.tableContainer}>
+              <table className={styles.table}>
+                <thead><tr><th>Candidate</th><th>Type</th><th>Schedule</th><th>Status</th><th>Action</th></tr></thead>
+                <tbody>{interviews.map((i) => <tr key={i.id}><td><strong>{i.candidate_email}</strong></td><td>{i.interview_type}</td><td>{formatDateTime(i.scheduled_at)}</td><td><span className={i.status === 'completed' ? styles.passTag : styles.pendingTag}>{i.status}</span></td><td><button type="button" className={styles.btnSuccess} disabled={saving || i.status === 'completed'} onClick={() => withSave(() => managerAPI.updateInterviewStatus(i.id, 'completed'), 'Failed to update interview status')}>Pass</button></td></tr>)}</tbody>
+              </table>
+            </div>
           </div>
         </div>
       );
     }
+
 
     if (activeSection === 'offboarding') {
       return (
@@ -495,17 +692,6 @@ const ManagerDashboard = () => {
               <tbody>{offboardingLetters.map((o) => <tr key={o.id}><td>{o.candidate_email}</td><td>{o.job_id || 'N/A'}</td><td>{o.job_title || 'N/A'}</td><td>{o.status}</td><td>{formatDateTime(o.sent_at)}</td></tr>)}</tbody>
             </table>
           </div>
-        </div>
-      );
-    }
-
-    if (activeSection === 'updates') {
-      return (
-        <div className={styles.card}>
-          <h3>Recent Updates</h3>
-          <table className={styles.table}><thead><tr><th>Type</th><th>Candidate</th><th>Update</th><th>Time</th></tr></thead>
-            <tbody>{recentUpdates.map((u) => <tr key={u.id}><td>{u.type}</td><td>{u.candidate_email}</td><td>{u.message}</td><td>{formatDateTime(u.updated_at)}</td></tr>)}</tbody>
-          </table>
         </div>
       );
     }

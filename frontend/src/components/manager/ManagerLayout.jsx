@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import styles from './ManagerLayout.module.css';
 
 const menuItems = [
-  { key: 'dashboard', label: 'Dashboard Overview' },
+  { key: 'overview', label: 'Dashboard Overview' },
   { key: 'profile', label: 'Manager Profile' },
   { key: 'users', label: 'User Management' },
   { key: 'jobs', label: 'Job Updates' },
