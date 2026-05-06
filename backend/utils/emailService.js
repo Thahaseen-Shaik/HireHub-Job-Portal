@@ -84,7 +84,8 @@ const sendInterviewInvitation = async ({ candidateEmail, interviewType, schedule
  * Send Password Reset Email
  */
 const sendResetEmail = async (email, resetToken) => {
-  const resetUrl = `http://localhost:3000/reset-password?token=${resetToken}`;
+  const frontendBaseUrl = String(process.env.FRONTEND_URL || process.env.APP_URL || 'http://localhost:3000').replace(/\/+$/, '');
+  const resetUrl = `${frontendBaseUrl}/reset-password?token=${resetToken}`;
 
   return sendMail({
     to: email,

@@ -3,6 +3,18 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import styles from './LoginPage.module.css';
 
+const getDefaultDashboardPath = (role) => {
+  if (['admin', 'superadmin'].includes(role)) {
+    return '/admin/dashboard';
+  }
+
+  if (['manager', 'company_manager'].includes(role)) {
+    return '/manager/dashboard';
+  }
+
+  return '/user/home';
+};
+
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -40,18 +52,21 @@ const LoginPage = () => {
     }
 
     if (!agreedToLegal) {
-      setError('You must have to accept the terms and conditions checkbox.');
+      setError('You must accept the terms and conditions checkbox.');
       return;
     }
 
     setLoading(true);
 
     try {
-      await login(email, password);
-      // Redirect to dashboard automatically
-      navigate('/dashboard', { replace: true });
+      const result = await login(email, password);
+      navigate(getDefaultDashboardPath(result?.user?.role), { replace: true });
     } catch (err) {
-      setError(err.response?.data?.error || err.response?.data?.message || 'Login failed');
+      setError(
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        'Unable to sign in right now. Please check your credentials and try again.'
+      );
     } finally {
       setLoading(false);
     }
@@ -68,7 +83,7 @@ const LoginPage = () => {
           <p>Manager: manager@hirehub.com / Manager12</p>
           <p>User: irfanshaikmohammad1@gmail.com / User@123</p>
         </div>
-        
+
         {error && <div className={styles.alert}>{error}</div>}
 
         <form onSubmit={handleSubmit}>
@@ -106,11 +121,11 @@ const LoginPage = () => {
           </div>
 
           <div className={styles.checkboxGroup}>
-            <input 
-              type="checkbox" 
-              id="agreeLegal" 
-              checked={agreedToLegal} 
-              onChange={(e) => setAgreedToLegal(e.target.checked)} 
+            <input
+              type="checkbox"
+              id="agreeLegal"
+              checked={agreedToLegal}
+              onChange={(e) => setAgreedToLegal(e.target.checked)}
               onClick={(e) => {
                 const hasTerms = localStorage.getItem('agreedToTerms') === 'true';
                 const hasPrivacy = localStorage.getItem('agreedToPrivacy') === 'true';
@@ -150,7 +165,7 @@ const LoginPage = () => {
           className={styles.backBtn}
           onClick={() => navigate('/')}
         >
-          ← Back to Home
+          <- Back to Home
         </button>
       </div>
     </div>

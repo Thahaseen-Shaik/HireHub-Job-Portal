@@ -28,7 +28,14 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
-app.use(cors());
+const allowedOrigins = String(process.env.CORS_ORIGIN || process.env.FRONTEND_URL || '')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+app.use(cors({
+  origin: allowedOrigins.length > 0 ? allowedOrigins : true
+}));
 app.use(bodyParser.json({ limit: '20mb' }));
 app.use(bodyParser.urlencoded({ extended: true, limit: '20mb' }));
 
@@ -60,10 +67,6 @@ app.use((req, res) => {
 app.use(errorHandler);
 
 const ensureDemoUsers = async () => {
-  if (process.env.NODE_ENV === 'production') {
-    return;
-  }
-
   const defaults = [
     { name: 'Irfan Demo User', email: 'irfanshaikmohammad1@gmail.com', password: 'User@123', role: 'user' },
     { name: 'Super Admin', email: 'admin@hirehub.com', password: 'Admin@123', role: 'admin' },
@@ -101,10 +104,6 @@ const ensureDemoUsers = async () => {
 };
 
 const ensureSupportedUserRolesConstraint = async () => {
-  if (process.env.NODE_ENV === 'production') {
-    return;
-  }
-
   // Drop old restrictive role constraint first.
   await pool.query(`
     ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check;

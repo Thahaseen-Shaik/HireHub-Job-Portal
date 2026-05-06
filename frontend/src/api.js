@@ -1,14 +1,14 @@
 import axios from 'axios';
 
 const normalizeApiBaseUrl = (value) => {
-  const fallback = 'http://localhost:5000/api';
+  const browserFallback = typeof window !== 'undefined' ? `${window.location.origin}/api` : '/api';
   if (!value || typeof value !== 'string') {
-    return fallback;
+    return browserFallback;
   }
 
   const trimmed = value.trim().replace(/\/+$/, '');
   if (!trimmed) {
-    return fallback;
+    return browserFallback;
   }
 
   return /\/api$/i.test(trimmed) ? trimmed : `${trimmed}/api`;
